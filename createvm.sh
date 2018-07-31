@@ -36,5 +36,7 @@ vboxmanage modifyvm ${VNAME} --vrdeauthtype null
 
 vboxmanage modifyvm ${VNAME} --vrdeauthlibrary default
 
+echo "[MYSUCCESS666]"
+
 #vboxmanage startvm ${VNAME} --type headless
 
