@@ -251,6 +251,7 @@ class Fuzzer:
                 md5_num = r.llen("crashes_md5")
                 for i in range(md5_num):
                     crashes_md5.append(r.lindex("crashes_md5",i))
+                log("\tworkings: %s" % (str(self.workings),))
                 log("\tbeats: %s"%(str(self.beats),))
                 log("\tcrashes_md5: %s"%(str(crashes_md5),))
             except:
