@@ -31,7 +31,7 @@ class Machine:
             self.run()
             time.sleep(60)
             for _ in range(48):
-                if None == r.get("thisvname")
+                if None == r.get("thisvname"):
                     return True
                 time.sleep(5)
             r.delete("thisvname")
@@ -59,11 +59,21 @@ class Machine:
         self.stop()
         time.sleep(10)
         self.run()
-        return self.running
+        time.sleep(30)
+        for _ in range(30):
+            if self.alive:
+                break
+            time.sleep(3)
+        return self.alive
+
+    def destroy(self):
+        t = threading.Thread(target=vbutils.removevm, args=(self.name,))
+        t.setDaemon(True)
+        t.start()
 
     @property
     def alive(self):
-        return int(float(time.time()))+ 60 - self.beat <= 300
+        return int(float(time.time()))+ 60 - self.beat <= 600
 
     @property
     def running(self):
@@ -90,9 +100,13 @@ class Machine:
 
 
 class Fuzzer:
-    crash_dir="\\home\\xupeng\\xuzz\\crashes"
-    base_dir="\\home\\xupeng\\xuzz"
-    def __init__(self,vnames,max_runnings=8):
+    crash_dir = "\\home\\xupeng\\xuzz\\crashes"
+    base_dir = "\\home\\xupeng\\xuzz"
+    port_base = 20800
+    vdi_path=""dfddf
+    create_vm_lock=threading.Lock()
+
+    def __init__(self,max_runnings=8):
 
         self.machine_daemon=None
         self.crash_daemon=None
@@ -100,10 +114,10 @@ class Fuzzer:
 
         self.max_runnings=max_runnings
         self.workings=[]
-        self.paralysises=[]
         self.vms={}
-        for vname in vnames:
-            self.vms[vname]=Machine(name=vname)
+        for vname in vbutils.listvms():
+            if vname.find("fuzz")>=0:
+                self.vms[vname]=Machine(name=vname)
 
         if not os.path.exists(Fuzzer.base_dir):
             os.makedirs(Fuzzer.base_dir)
@@ -115,7 +129,7 @@ class Fuzzer:
     def start_fuzz(self):
         log("start_fuzz ...")
         for vname in self.vms.keys()[0:self.max_runnings]:
-            log("\tinit run [%s]"%(vname,))
+            log("\tinit run [%s] ..."%(vname,))
             status=self.vms[vname].init_run()
             log("\tinit run [%s] finish:%s" % (vname,str(status)))
             self.workings.append(vname)
@@ -129,10 +143,82 @@ class Fuzzer:
 
     def daemon_machine(self):
         while True:
-            time.sleep(300)
+            time.sleep(180)
             log("machine daemon alive ...")
+            paralysises=[]
             for vname in self.workings:
-                if self.vms[vname].alive
+                if not self.vms[vname].alive:
+                    log("\trestart %s ..."%(vname,))
+                    index=self.workings.index(vname)
+                    if index in range(len(self.workings)):
+                        del self.workings[index]
+                    if vname not in paralysises:
+                        paralysises.append(vname)
+                    status=self.vms[vname].restart()
+                    log("\trestart %s finish:%s"%(vname,str(status)))
+
+            for vname in paralysises:
+                if self.vms[vname].alive:
+                    if vname not in self.workings:
+                        self.workings.append(vname)
+                    log("\t%s alive!"%(vname,))
+                else:
+                    if vname in self.workings:
+                        index=self.workings.index(vname)
+                        del self.workings[index]
+
+                    if vname in self.vms.keys():
+                        self.vms[vname].destroy()
+                        del self.vms[vname]
+
+                    log("\tdestroy %s"%(vname,))
+
+            self.keep_vm_num()
+
+    def keep_vm_num(self):
+        if len(self.workings) < self.max_runnings:
+            for vname in self.vms.keys():
+                if vname in self.workings:
+                    continue
+                log("\tinit run [%s] ..." % (vname,))
+                status = self.vms[vname].init_run()
+                log("\tinit run [%s] finish:%s" % (vname, str(status)))
+                self.workings.append(vname)
+
+        if len(self.workings) < self.max_runnings:
+            self.create_vm()
+
+
+    def create_vm(self):
+        Fuzzer.create_vm_lock.acquire()
+        vname="fuzzer-"
+        port=Fuzzer.port_base
+        for i in range(1,1000):
+            if vname+str(i) not in self.vms.keys():
+                vname+=str(i)
+                port+=i
+                break
+        log("create vm %s %s ..."%(vname,str(port)))
+        status=False
+        try:
+            status=vbutils.createvm(vname,Fuzzer.vdi_path,port)
+        except:
+            traceback.print_exc()
+        log("create vm %s %s finish:%s" % (vname, str(port),str(status)))
+        if status:
+            self.vms[vname]=Machine(name=vname)
+
+            Fuzzer.create_vm_lock.release()
+            return vname
+        else:
+            try:
+                vbutils.removevm(vname)
+            except:
+                traceback.print_exc()
+
+            Fuzzer.create_vm_lock.release()
+            return None
+
 
     def daemon_crash(self):
         while True:
@@ -166,7 +252,7 @@ class Fuzzer:
                 for i in range(md5_num):
                     crashes_md5.append(r.lindex("crashes_md5",i))
                 log("\tbeats: %s"%(str(self.beats),))
-                print "crashes_md5:",crashes_md5
+                log("\tcrashes_md5: %s"%(str(crashes_md5),))
             except:
                 traceback.print_exc()
 
