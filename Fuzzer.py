@@ -124,7 +124,7 @@ class Fuzzer:
         if not os.path.exists(Fuzzer.crash_dir):
             os.makedirs(Fuzzer.crash_dir)
 
-        self.log("__init__ finish")
+        log("__init__ finish")
 
     def start_fuzz(self):
         log("start_fuzz ...")
@@ -133,9 +133,12 @@ class Fuzzer:
             status=self.vms[vname].init_run()
             log("\tinit run [%s] finish:%s" % (vname,str(status)))
             self.workings.append(vname)
-        self.machine_daemon=threading.Thread(target=self.daemon_machine,daemon=True)
+        self.machine_daemon=threading.Thread(target=self.daemon_machine)
+        self.machine_daemon.setDaemon(True)
         self.crash_daemon=threading.Thread(target=self.daemon_crash,daemon=True)
+        self.machine_daemon.setDaemon(True)
         self.info_daemon=threading.Thread(target=self.daemon_info,daemon=True)
+        self.machine_daemon.setDaemon(True)
         self.machine_daemon.start()
         self.crash_daemon.start()
         self.info_daemon.start()
