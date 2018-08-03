@@ -103,7 +103,7 @@ class Fuzzer:
     crash_dir = "\\home\\xupeng\\xuzz\\crashes"
     base_dir = "\\home\\xupeng\\xuzz"
     port_base = 20800
-    vdi_path=""dfddf
+    vdi_path="\\home\\xupeng\\xuzz\\fuzzer-w7-64-v1.vdi"
     create_vm_lock=threading.Lock()
 
     def __init__(self,max_runnings=8):
