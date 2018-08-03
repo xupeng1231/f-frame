@@ -8,7 +8,7 @@ import os
 import hashlib
 import datetime
 
-pool=redis.ConnectionPool(host="192.168.4.2",port=6379,decode_response=True)
+pool=redis.ConnectionPool(host="192.168.4.2",port=6379 )
 hash=hashlib.md5()
 
 
@@ -39,6 +39,7 @@ class Machine:
             traceback.print_exc()
             self.stop()
             return False
+        return False
     def run(self):
         if not self.running:
             t=threading.Thread(target=vbutils.startvm,args=(self.name,))
@@ -100,10 +101,10 @@ class Machine:
 
 
 class Fuzzer:
-    crash_dir = "\\home\\xupeng\\xuzz\\crashes"
-    base_dir = "\\home\\xupeng\\xuzz"
+    crash_dir = "/home/xupeng/xuzz/crashes"
+    base_dir = "/home/xupeng/xuzz"
     port_base = 20800
-    vdi_path="\\home\\xupeng\\xuzz\\fuzzer-w7-64-v1.vdi"
+    vdi_path="/home/xupeng/xuzz/fuzzer-w7-64-v1.vdi"
     create_vm_lock=threading.Lock()
 
     def __init__(self,max_runnings=8):
