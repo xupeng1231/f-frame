@@ -277,12 +277,6 @@ class Fuzzer:
 
 
 if __name__=="__main__":
-    r=redis.Redis(connection_pool=pool)
-    for vm in vbutils.listrunningvms():
-        vbutils.stopvm(vm)
-    #for vm in vbutils.listvms():
-        #vbutils.removevm(vm)
-
-    #for vm in vbutils.listvms():
-        #r.set("thisvname",vname)
+    fuzzer=Fuzzer(max_runnings=8)
+    fuzzer.start_fuzz()
 
