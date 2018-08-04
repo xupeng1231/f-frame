@@ -28,19 +28,22 @@ class Machine:
         try:
             r=redis.Redis(connection_pool=pool)
             r.set("thisvname",self.name)
-            self.run()
+            status=self.run()
+            if not status:
+                r.delete("thisvname")
+                return False
             time.sleep(60)
             for _ in range(48):
                 if None == r.get("thisvname") or self.alive:
                     r.delete("thisvname")
                     return True
                 time.sleep(5)
-            r.delete("thisvname")
         except:
             r.delete("thisvname")
             traceback.print_exc()
             self.stop()
             return False
+        r.delete("thisvname")
         return False
 
     def run(self):
