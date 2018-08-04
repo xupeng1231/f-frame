@@ -75,7 +75,7 @@ def stopvm(vname):
     if outs.find("100%")>=0:
         return True
     else:
-        p=Popen(args=["vboxmanage","startvm",vname,"emergencystop"],stdout=PIPE,stderr=PIPE)
+        p=Popen(args=["vboxmanage","startvm",vname,"--type","emergencystop"],stdout=PIPE,stderr=PIPE)
         p.wait()
         outs=p.stdout.read()
         outs1=p.stderr.read()

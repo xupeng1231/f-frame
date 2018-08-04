@@ -68,13 +68,15 @@ class Machine:
         return self.alive
 
     def destroy(self):
+        time.sleep(2)
+        self.stop()
         t = threading.Thread(target=vbutils.removevm, args=(self.name,))
         t.setDaemon(True)
         t.start()
 
     @property
     def alive(self):
-        return int(float(time.time())) - self.beat <= 600
+        return int(float(time.time())) - self.beat <= 300
 
     @property
     def running(self):
@@ -104,7 +106,7 @@ class Fuzzer:
     crash_dir = "/home/xupeng/xuzz/crashes"
     base_dir = "/home/xupeng/xuzz"
     port_base = 20800
-    vdi_path="/home/xupeng/xuzz/fuzzer-w7-64-v1.vdi"
+    vdi_path="/home/xupeng/xuzz/v1-win7-64bit-professional.vdi"
     create_vm_lock=threading.Lock()
 
     def __init__(self,max_runnings=8):
@@ -206,8 +208,10 @@ class Fuzzer:
         Fuzzer.create_vm_lock.acquire()
         vname="fuzzer-"
         port=Fuzzer.port_base
-        for i in range(1,1000):
-            if vname+str(i) not in self.vms.keys():
+        for i in range(1,8000):
+            dir_path=os.path.join("/home/xupeng/VirtualBox VMs",vname+str(i))
+            vdi_path=os.path.join("/home/xupeng/vm-disks",vname+str(i))
+            if (vname+str(i) not in self.vms.keys()) and (vname+str(i) not in vbutils.listvms()) and (not os.path.exists((dir_path))) and (not os.path.exists((vdi_path))):
                 vname+=str(i)
                 port+=i
                 break
