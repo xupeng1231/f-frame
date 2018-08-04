@@ -41,19 +41,17 @@ class Machine:
             return False
         return False
     def run(self):
-        if not self.running:
-            t=threading.Thread(target=vbutils.startvm,args=(self.name,))
-            t.setDaemon(True)
-            t.start()
-            time.sleep(6)
+        t=threading.Thread(target=vbutils.startvm,args=(self.name,))
+        t.setDaemon(True)
+        t.start()
+        time.sleep(6)
         return self.running
 
     def stop(self):
-        if self.running:
-            t=threading.Thread(target=vbutils.stopvm,args=(self.name,))
-            t.setDaemon(True)
-            t.start()
-            time.sleep(6)
+        t=threading.Thread(target=vbutils.stopvm,args=(self.name,))
+        t.setDaemon(True)
+        t.start()
+        time.sleep(6)
         return not self.running
 
     def restart(self):
