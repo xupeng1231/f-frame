@@ -174,7 +174,7 @@ class Fuzzer:
                 if self.vms[vname].alive:
                     if vname not in self.workings:
                         self.workings.append(vname)
-                    log("\t%s alive!"%(vname,))
+                    log("\t%s realive!"%(vname,))
                 else:
                     if vname in self.workings:
                         index=self.workings.index(vname)
@@ -191,7 +191,7 @@ class Fuzzer:
     def keep_vm_num(self):
         if len(self.workings) < self.max_runnings:
             for vname in self.vms.keys():
-                if vname in self.workings:
+                if vname in self.workings or self.vms[vname].running or self.vms[vname].alive or (not self.vms[vname].exist):
                     continue
                 log("\tinit run [%s] ..." % (vname,))
                 status = self.vms[vname].init_run()
@@ -212,9 +212,10 @@ class Fuzzer:
                 port+=i
                 break
         log("create vm %s %s ..."%(vname,str(port)))
-        status=False
+
+        status = False
         try:
-            status=vbutils.createvm(vname,Fuzzer.vdi_path,port)
+            status = vbutils.createvm(vname,Fuzzer.vdi_path,port)
         except:
             traceback.print_exc()
         log("create vm %s %s finish:%s" % (vname, str(port),str(status)))
