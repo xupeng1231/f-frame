@@ -125,6 +125,7 @@ class Fuzzer:
         for vname in self.vms.keys():
             if self.vms[vname].alive:
                 self.workings.append(vname)
+        log("init fuzzer.workings:%s"%(str(self.workings)))
 
         if not os.path.exists(Fuzzer.base_dir):
             os.makedirs(Fuzzer.base_dir)
