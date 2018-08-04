@@ -134,12 +134,15 @@ class Fuzzer:
         log("start_fuzz ...")
         need_num=self.max_runnings - len(self.workings)
         for vname in self.vms.keys():
+            if need_num <=0:
+                break
             if vname in self.workings or self.vms[vname].running or self.vms[vname].alive  or (not self.vms[vname].exist):
                 continue
             log("\tinit run [%s] ..."%(vname,))
             status=self.vms[vname].init_run()
             log("\tinit run [%s] finish:%s" % (vname,str(status)))
             self.workings.append(vname)
+            need_num -= 1
         self.machine_daemon=threading.Thread(target=self.daemon_machine)
         self.machine_daemon.setDaemon(True)
         self.crash_daemon=threading.Thread(target=self.daemon_crash)
