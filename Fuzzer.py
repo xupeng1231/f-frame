@@ -31,15 +31,18 @@ class Machine:
             self.run()
             time.sleep(60)
             for _ in range(48):
-                if None == r.get("thisvname"):
+                if None == r.get("thisvname") or self.alive:
+                    r.delete("thisvname")
                     return True
                 time.sleep(5)
             r.delete("thisvname")
         except:
+            r.delete("thisvname")
             traceback.print_exc()
             self.stop()
             return False
         return False
+
     def run(self):
         t=threading.Thread(target=vbutils.startvm,args=(self.name,))
         t.setDaemon(True)
