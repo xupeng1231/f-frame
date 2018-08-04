@@ -74,7 +74,7 @@ class Machine:
 
     @property
     def alive(self):
-        return int(float(time.time()))+ 60 - self.beat <= 600
+        return int(float(time.time())) - self.beat <= 600
 
     @property
     def running(self):
@@ -112,13 +112,16 @@ class Fuzzer:
         self.machine_daemon=None
         self.crash_daemon=None
         self.info_daemon=None
-
-        self.max_runnings=max_runnings
-        self.workings=[]
         self.vms={}
         for vname in vbutils.listvms():
             if vname.find("fuzz")>=0:
                 self.vms[vname]=Machine(name=vname)
+
+        self.max_runnings=max_runnings
+        self.workings=[]
+        for vname in self.vms.keys():
+            if self.vms[vname].alive:
+                self.workings.append(vname)
 
         if not os.path.exists(Fuzzer.base_dir):
             os.makedirs(Fuzzer.base_dir)
@@ -129,7 +132,10 @@ class Fuzzer:
 
     def start_fuzz(self):
         log("start_fuzz ...")
-        for vname in self.vms.keys()[0:self.max_runnings]:
+        need_num=self.max_runnings - len(self.workings)
+        for vname in self.vms.keys():
+            if vname in self.workings or self.vms[vname].running or self.vms[vname].alive  or (not self.vms[vname].exist):
+                continue
             log("\tinit run [%s] ..."%(vname,))
             status=self.vms[vname].init_run()
             log("\tinit run [%s] finish:%s" % (vname,str(status)))
@@ -283,4 +289,7 @@ class Fuzzer:
 if __name__=="__main__":
     fuzzer=Fuzzer(max_runnings=8)
     fuzzer.start_fuzz()
+    fuzzer.machine_daemon.join()
+    fuzzer.crash_daemon.join()
+    fuzzer.info_daemon.join()
 
