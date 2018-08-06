@@ -206,7 +206,9 @@ class Fuzzer:
                 self.workings.append(vname)
 
         if len(self.workings) < self.max_runnings:
-            self.create_vm()
+            need_num = self.max_runnings - len(self.workings)
+            for _ in range(need_num):
+                self.create_vm()
 
 
     def create_vm(self):
@@ -214,11 +216,11 @@ class Fuzzer:
         vname="fuzzer-"
         port=Fuzzer.port_base
         for i in range(1,8000):
-            dir_path=os.path.join("/home/xupeng/VirtualBox VMs",vname+str(i))
-            vdi_path=os.path.join("/home/xupeng/vm-disks",vname+str(i))
+            dir_path = os.path.join("/home/xupeng/VirtualBox VMs", vname+str(i))
+            vdi_path = os.path.join("/home/xupeng/vm-disks", vname+str(i))
             if (vname+str(i) not in self.vms.keys()) and (vname+str(i) not in vbutils.listvms()) and (not os.path.exists((dir_path))) and (not os.path.exists((vdi_path))):
-                vname+=str(i)
-                port+=i
+                vname += str(i)
+                port += i
                 break
         log("create vm %s %s ..."%(vname,str(port)))
 
