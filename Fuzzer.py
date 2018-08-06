@@ -277,9 +277,9 @@ class Fuzzer:
                 for i in range(md5_num):
                     crashes_md5.append(r.lindex("crashes_md5",i))
                 beats=self.beats
-                beats=[beats[x] if beats[x]<1000 else "--" for x in sorted(beats.keys())]
-                log("\tworkings: %s" % (str(sorted(self.workings)),))
-                log("\tbeats: %s"%(str(beats),))
+                beats=[str(x)+":"+str(beats[x]) if beats[x]<1000 else "--" for x in sorted(beats.keys())]
+                log("\tworkings:%d %s" % (len(self.workings),str(sorted(self.workings,cmp=lambda x,y:(len(x)<len(y) if len(x)<len(y) else x<y))),))
+                log("\tbeats:%d %s"%(len(self.vms.keys()),str(beats),))
                 log("\tcrashes_md5: %s"%(str(crashes_md5),))
             except:
                 traceback.print_exc()
