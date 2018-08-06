@@ -20,7 +20,7 @@ echo "copy finished"
 
 vboxmanage createvm --name ${VNAME} --ostype "Windows7_64" --register
 
-vboxmanage modifyvm ${VNAME} --memory 4096 --cpus 2
+vboxmanage modifyvm ${VNAME} --memory 1024 --cpus 1
 
 vboxmanage storagectl ${VNAME} --name "IDE Controller" --add ide --bootable on
 
