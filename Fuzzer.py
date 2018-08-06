@@ -80,7 +80,7 @@ class Machine:
 
     @property
     def alive(self):
-        return int(float(time.time())) - self.beat <= 300
+        return int(float(time.time())) - self.beat <= 120
 
     @property
     def running(self):
@@ -163,7 +163,7 @@ class Fuzzer:
 
     def daemon_machine(self):
         while True:
-            time.sleep(180)
+            time.sleep(120)
             log("machine daemon alive ...")
             paralysises=[]
             for vname in self.workings:
