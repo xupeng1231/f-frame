@@ -206,9 +206,9 @@ class Fuzzer:
                 self.workings.append(vname)
 
         if len(self.workings) < self.max_runnings:
-            need_num = self.max_runnings - len(self.workings)
-            for _ in range(need_num):
-                self.create_vm()
+            t=threading.Thread(target=self.create_vm)
+            t.setDaemon(True)
+            t.start()
 
 
     def create_vm(self):
@@ -276,8 +276,10 @@ class Fuzzer:
                 md5_num = r.llen("crashes_md5")
                 for i in range(md5_num):
                     crashes_md5.append(r.lindex("crashes_md5",i))
-                log("\tworkings: %s" % (str(self.workings),))
-                log("\tbeats: %s"%(str(self.beats),))
+                beats=self.beats
+                beats=[beats[x] if beats[x]<1000 else "--" for x in sorted(beats.keys())]
+                log("\tworkings: %s" % (str(sorted(self.workings)),))
+                log("\tbeats: %s"%(str(beats),))
                 log("\tcrashes_md5: %s"%(str(crashes_md5),))
             except:
                 traceback.print_exc()
@@ -302,7 +304,7 @@ class Fuzzer:
 
 
 if __name__=="__main__":
-    fuzzer=Fuzzer(max_runnings=8)
+    fuzzer=Fuzzer(max_runnings=28)
     fuzzer.start_fuzz()
     fuzzer.machine_daemon.join()
     fuzzer.crash_daemon.join()
