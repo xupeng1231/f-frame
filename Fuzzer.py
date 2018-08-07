@@ -7,6 +7,7 @@ import threading
 import os
 import hashlib
 import datetime
+import random
 
 pool=redis.ConnectionPool(host="192.168.4.2",port=6379 )
 hash=hashlib.md5()
@@ -215,7 +216,8 @@ class Fuzzer:
         Fuzzer.create_vm_lock.acquire()
         vname="fuzzer-"
         port=Fuzzer.port_base
-        for i in range(1,8000):
+        while True:
+            i = random.randint(0 , 8000)
             dir_path = os.path.join("/home/xupeng/VirtualBox VMs", vname+str(i))
             vdi_path = os.path.join("/home/xupeng/vm-disks", vname+str(i))
             if (vname+str(i) not in self.vms.keys()) and (vname+str(i) not in vbutils.listvms()) and (not os.path.exists((dir_path))) and (not os.path.exists((vdi_path))):
