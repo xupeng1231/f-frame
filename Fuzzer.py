@@ -84,6 +84,10 @@ class Machine:
         return int(float(time.time())) - self.beat <= 120
 
     @property
+    def alive_reporter(self):
+        return int(float(time.time())) - self.beat_r <= 300
+
+    @property
     def running(self):
         return self.name in vbutils.listrunningvms()
 
@@ -97,6 +101,20 @@ class Machine:
             try:
                 r = redis.Redis(connection_pool=pool)
                 beat=r.get(self.name)
+                if None == beat:
+                    return 0
+                else:
+                    return int(float(r.get(self.name)))
+            except:
+                traceback.print_exc()
+        return 0
+
+    @property
+    def beat_r(self):
+        for _ in range(2):
+            try:
+                r = redis.Redis(connection_pool=pool)
+                beat=r.get(self.name+"-reporter")
                 if None == beat:
                     return 0
                 else:
@@ -168,7 +186,7 @@ class Fuzzer:
             log("machine daemon alive ...")
             paralysises=[]
             for vname in self.workings:
-                if not self.vms[vname].alive:
+                if (not self.vms[vname].alive) or (not self.vms[vname].alive_reporter):
                     log("\trestart %s ..."%(vname,))
                     index=self.workings.index(vname)
                     if index in range(len(self.workings)):
@@ -179,7 +197,7 @@ class Fuzzer:
                     log("\trestart %s finish:%s"%(vname,str(status)))
 
             for vname in paralysises:
-                if self.vms[vname].alive:
+                if self.vms[vname].alive and self.vms[vname].alive_reporter:
                     if vname not in self.workings:
                         self.workings.append(vname)
                     log("\t%s realive!"%(vname,))
@@ -278,10 +296,9 @@ class Fuzzer:
                 md5_num = r.llen("crashes_md5")
                 for i in range(md5_num):
                     crashes_md5.append(r.lindex("crashes_md5",i))
-                beats=self.beats
-                beats=[str(x)+":"+str(beats[x]) if beats[x]<1000 else "--" for x in sorted(beats.keys())]
                 log("\tworkings:%d %s" % (len(self.workings),str(sorted(self.workings,cmp=lambda x,y:(len(x)<len(y) if len(x)<len(y) else x<y))),))
-                log("\tbeats:%d %s"%(len(self.vms.keys()),str(beats),))
+                log("\tbeats:%d %s"%(len(self.vms.keys()),str(self.beats),))
+                log("\tbeats_r:%d %s" % (len(self.vms.keys()), str(self.beats_r),))
                 log("\tcrashes_md5: %s"%(str(crashes_md5),))
             except:
                 traceback.print_exc()
@@ -298,6 +315,23 @@ class Fuzzer:
                         beat=0
                     beat = int(float(time.time()))-int(float(beat))
                     beats[vname]=beat
+                return beats
+            except:
+                traceback.print_exc()
+        return beats
+
+    @property
+    def beats_r(self):
+        beats = {}
+        for _ in range(2):
+            try:
+                r = redis.Redis(connection_pool=pool)
+                for vname in self.vms.keys():
+                    beat = r.get(vname+"-reporter")
+                    if None == beat:
+                        beat = 0
+                    beat = int(float(time.time())) - int(float(beat))
+                    beats[vname] = beat
                 return beats
             except:
                 traceback.print_exc()
