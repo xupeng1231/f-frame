@@ -154,6 +154,10 @@ class Fuzzer:
         if not os.path.exists(Fuzzer.crash_dir):
             os.makedirs(Fuzzer.crash_dir)
 
+        need_num = self.max_runnings-len(self.vms.keys())
+        for _ in range(need_num):
+            self.create_vm()
+
         log("__init__ finish")
 
     def start_fuzz(self):
@@ -225,11 +229,9 @@ class Fuzzer:
                 self.workings.append(vname)
 
         if len(self.workings) < self.max_runnings:
-            need_num=self.max_runnings-len(self.workings)
-            for _ in range(need_num):
-                t=threading.Thread(target=self.create_vm)
-                t.setDaemon(True)
-                t.start()
+            t=threading.Thread(target=self.create_vm)
+            t.setDaemon(True)
+            t.start()
 
 
     def create_vm(self):
