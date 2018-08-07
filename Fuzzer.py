@@ -225,9 +225,11 @@ class Fuzzer:
                 self.workings.append(vname)
 
         if len(self.workings) < self.max_runnings:
-            t=threading.Thread(target=self.create_vm)
-            t.setDaemon(True)
-            t.start()
+            need_num=self.max_runnings-len(self.workings)
+            for _ in range(need_num):
+                t=threading.Thread(target=self.create_vm)
+                t.setDaemon(True)
+                t.start()
 
 
     def create_vm(self):
